@@ -485,6 +485,7 @@
     .modal { padding: 20px 16px; }
   }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -710,6 +711,11 @@ function todayStr() {
   const d = new Date();
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
+
+// ==================== Supabase ====================
+const SUPABASE_URL = "https://zuqnejkmqxfpezfptfeo.supabase.co";
+const SUPABASE_KEY = "sb_publishable_nW1tyYpZqGMWX_4zTDtW_g_5EIkgmVO";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ==================== 用户管理 ====================
 const EMOJI_POOL = ["🐱","🐰","🐶","🐻","🐼","🐨","🦊","🐸","🐵","🐙","🦄","🐧","🐥","🦋","🐞","🐝","🐳","🐬","🌟","🌸","🍀","🎀","💎","🔥","⚡","🌈","🍓","🍑","🍒","🥑","🧸","🎈","🎵","🍭"];
@@ -1503,47 +1509,62 @@ document.getElementById("workGearBtn").addEventListener("click", () => {
   );
 });
 
-// ==================== 4. 留言板 ====================
-function getMessages() { return LS.get(getUserPrefix() + "messages", []); }
-function setMessages(msgs) { LS.set(getUserPrefix() + "messages", msgs); }
-
-function renderMessages() {
-  const msgs = getMessages();
+// ==================== 4. 留言板（Supabase 共享） ====================
+async function renderMessages() {
   const list = document.getElementById("msgList");
-  if (msgs.length === 0) {
+  list.innerHTML = '<div class="history-empty">⏳ 加载中…</div>';
+
+  const { data, error } = await sb
+    .from("messages")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    list.innerHTML = '<div class="history-empty">⚠️ 加载失败，请检查网络</div>';
+    console.error("Supabase fetch error:", error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
     list.innerHTML = '<div class="history-empty">💭 暂无留言，说点什么吧～</div>';
     return;
   }
-  const sorted = [...msgs].reverse();
-  list.innerHTML = sorted.map(m => {
-    const idx = msgs.indexOf(m);
-    return `
-      <div class="msg-item">
-        <div class="msg-body">
-          <div class="msg-text">💬 ${escHtml(m.text)}</div>
-          <div class="msg-time">🕐 ${fmtTime(m.time)}</div>
-        </div>
-        <span class="msg-del" data-idx="${idx}">🗑️</span>
+
+  list.innerHTML = data.map(m => `
+    <div class="msg-item">
+      <div class="msg-body">
+        <div class="msg-text">${escHtml(m.user_emoji)} <strong>${escHtml(m.user_name)}</strong>：${escHtml(m.text)}</div>
+        <div class="msg-time">🕐 ${fmtTime(m.created_at)}</div>
       </div>
-    `;
-  }).join("");
+      ${m.user_index === activeUser ? `<span class="msg-del" data-id="${m.id}">🗑️</span>` : ''}
+    </div>
+  `).join("");
+
   list.querySelectorAll(".msg-del").forEach(el => {
-    el.addEventListener("click", () => {
-      const ms = getMessages();
-      ms.splice(parseInt(el.dataset.idx), 1);
-      setMessages(ms);
-      renderMessages();
+    el.addEventListener("click", async () => {
+      const id = parseInt(el.dataset.id);
+      const { error: delErr } = await sb.from("messages").delete().eq("id", id);
+      if (!delErr) renderMessages();
     });
   });
 }
 
-function addMessage() {
+async function addMessage() {
   const input = document.getElementById("msgInput");
   const text = input.value.trim();
   if (!text) return;
-  const msgs = getMessages();
-  msgs.push({ text, time: new Date().toISOString() });
-  setMessages(msgs);
+  const u = users[activeUser];
+  const { error } = await sb.from("messages").insert({
+    user_index: activeUser,
+    user_name: u.name,
+    user_emoji: u.emoji,
+    text: text,
+  });
+  if (error) {
+    alert("发送失败：" + error.message);
+    return;
+  }
   input.value = "";
   renderMessages();
 }
@@ -1552,9 +1573,10 @@ document.getElementById("msgSendBtn").addEventListener("click", addMessage);
 document.getElementById("msgInput").addEventListener("keydown", e => { if (e.key === "Enter") addMessage(); });
 
 // 留言板管理弹窗
-document.getElementById("msgGearBtn").addEventListener("click", () => {
-  const msgs = getMessages();
-  openManageModal("💬 管理留言板 — " + users[activeUser].name,
+document.getElementById("msgGearBtn").addEventListener("click", async () => {
+  const { data: msgs } = await sb.from("messages").select("*").order("created_at", { ascending: false }).limit(200);
+
+  openManageModal("💬 管理留言板（共享）",
     (body) => {
       const addDiv = document.createElement("div");
       addDiv.className = "add-row";
@@ -1564,25 +1586,22 @@ document.getElementById("msgGearBtn").addEventListener("click", () => {
       `;
       body.appendChild(addDiv);
 
-      if (msgs.length === 0) {
+      if (!msgs || msgs.length === 0) {
         const empty = document.createElement("div");
         empty.className = "modal-empty";
         empty.textContent = "💭 暂无留言";
         body.appendChild(empty);
       } else {
-        [...msgs].reverse().forEach(m => {
+        msgs.forEach(m => {
           const row = document.createElement("div");
           row.className = "modal-item-row";
-          const idx = msgs.indexOf(m);
           row.innerHTML = `
-            <span class="item-text">💬 ${escHtml(m.text)}</span>
-            <span class="item-note">${fmtTime(m.time)}</span>
-            <span class="item-del" data-idx="${idx}">🗑️</span>
+            <span class="item-text">${escHtml(m.user_emoji)} ${escHtml(m.user_name)}：${escHtml(m.text)}</span>
+            <span class="item-note">${fmtTime(m.created_at)}</span>
+            <span class="item-del" data-id="${m.id}">🗑️</span>
           `;
-          row.querySelector(".item-del").addEventListener("click", () => {
-            const mms = getMessages();
-            mms.splice(parseInt(row.querySelector(".item-del").dataset.idx), 1);
-            setMessages(mms);
+          row.querySelector(".item-del").addEventListener("click", async () => {
+            await sb.from("messages").delete().eq("id", parseInt(row.querySelector(".item-del").dataset.id));
             renderMessages();
             document.getElementById("msgGearBtn").click();
           });
@@ -1594,12 +1613,16 @@ document.getElementById("msgGearBtn").addEventListener("click", () => {
         const addBtn = document.getElementById("msgModalAdd");
         const addInput = document.getElementById("msgModalInput");
         if (addBtn && addInput) {
-          const doAdd = () => {
+          const doAdd = async () => {
             const text = addInput.value.trim();
             if (!text) return;
-            const mms = getMessages();
-            mms.push({ text, time: new Date().toISOString() });
-            setMessages(mms);
+            const u = users[activeUser];
+            await sb.from("messages").insert({
+              user_index: activeUser,
+              user_name: u.name,
+              user_emoji: u.emoji,
+              text: text,
+            });
             renderMessages();
             document.getElementById("msgGearBtn").click();
           };
@@ -1613,9 +1636,9 @@ document.getElementById("msgGearBtn").addEventListener("click", () => {
         <button class="btn btn-danger btn-sm" id="msgClearAll">🗑️ 清空全部</button>
         <button class="btn btn-outline btn-sm" id="msgModalClose">关闭</button>
       `;
-      footer.querySelector("#msgClearAll").addEventListener("click", () => {
-        if (!confirm("确定要清空 " + users[activeUser].name + " 的所有留言吗？")) return;
-        setMessages([]);
+      footer.querySelector("#msgClearAll").addEventListener("click", async () => {
+        if (!confirm("确定要清空留言板的所有留言吗？（两人的都会被清空）")) return;
+        await sb.from("messages").delete().neq("id", 0);
         renderMessages();
         closeManageModal();
       });
