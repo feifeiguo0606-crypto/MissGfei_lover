@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日常助手</title>
+<style>
+  :root {
+    --bg: #f4f0ea;
+    --card: #ffffff;
+    --text: #2c2416;
+    --text2: #8c8578;
+    --text3: #b8b0a4;
+    --border: #e6ded2;
+    --shadow: 0 1px 3px rgba(44, 36, 22, 0.05), 0 4px 14px rgba(44, 36, 22, 0.04);
+    --shadow-lg: 0 2px 6px rgba(44, 36, 22, 0.04), 0 8px 28px rgba(44, 36, 22, 0.06);
+    --radius: 18px;
+    --radius-sm: 10px;
+    --accent-tea: #b8956a;
+    --accent-green: #8ca89b;
+    --accent-rose: #c4a0a0;
+    --accent-blue: #8a9faa;
+    --accent-tag: #efe9e0;
+    --font: "PingFang SC", "PingFang HK", "Noto Sans SC", "Microsoft YaHei", -apple-system, system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .main {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 36px 20px 60px;
+  }
+
+  /* ===== 头部 ===== */
+  .header {
+    text-align: center;
+    padding: 0 6px 24px;
+  }
+  .header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .header .date {
+    font-size: 0.85rem;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== 用户切换 ===== */
+  .user-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 4px;
+    background: #eae4da;
+    border-radius: 14px;
+  }
+  .user-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 11px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    color: var(--text2);
+    letter-spacing: 1px;
+    background: transparent;
+    border: none;
+    font-family: var(--font);
+    position: relative;
+  }
+  .user-tab.active {
+    background: #fff;
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(44, 36, 22, 0.08);
+  }
+  .user-tab .tab-emoji { margin-right: 3px; }
+  .user-tab .tab-edit-icon {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 0.68rem;
+    opacity: 0.35;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    vertical-align: middle;
+  }
+  .user-tab .tab-edit-icon:hover { opacity: 0.8; }
+
+  /* ===== 天气卡片 ===== */
+  .weather-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .weather-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .weather-card:hover { box-shadow: var(--shadow-lg); }
+  .weather-card.active-weather {
+    border-color: var(--accent-tea);
+    box-shadow: var(--shadow-lg);
+  }
+  .weather-card .wc-city {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .weather-card .wc-temp {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 1px;
+    line-height: 1;
+    margin: 6px 0;
+  }
+  .weather-card .wc-desc {
+    font-size: 0.78rem;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .weather-card .wc-info {
+    font-size: 0.72rem;
+    color: var(--text3);
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .weather-card .wc-dress {
+    margin-top: 8px;
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    display: inline-block;
+  }
+  .dress-hot { background: #fff0e8; color: #c07050; }
+  .dress-warm { background: #fff8e8; color: #b09050; }
+  .dress-cool { background: #eaf4f0; color: #5a8a7a; }
+  .dress-cold { background: #eaf0f8; color: #5a7090; }
+  .dress-freeze { background: #e8ecf4; color: #4a5a80; }
+  .weather-loading {
+    text-align: center;
+    color: var(--text3);
+    padding: 12px 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+  }
+  .weather-card .wc-emoji {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    font-size: 1.4rem;
+    opacity: 0.6;
+    animation: floatEmoji 3s ease-in-out infinite;
+  }
+  @keyframes floatEmoji {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .weather-card:nth-child(2) .wc-emoji {
+    animation-delay: 1.2s;
+  }
+  @keyframes gentlePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .wc-loading-dot {
+    animation: gentlePulse 1.2s ease-in-out infinite;
+  }
+  .wc-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .wc-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* ===== 卡片 ===== */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.3s;
+  }
+  .card:hover { box-shadow: var(--shadow-lg); }
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  .card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+  .gear-btn {
+    width: 30px; height: 30px;
+    border-radius: 15px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text3);
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .gear-btn:hover { border-color: #b8a590; color: var(--text2); }
+
+  /* ===== 按钮 ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    border-radius: 24px;
+    padding: 10px 22px;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-primary { background: var(--text); color: #fff; }
+  .btn-primary:active { background: #4a3f2f; transform: scale(0.97); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:active { background: var(--accent-tag); }
+  .btn-sm { font-size: 0.78rem; padding: 6px 16px; border-radius: 20px; }
+  .btn-block { width: 100%; }
+  .btn-xs { font-size: 0.72rem; padding: 3px 10px; border-radius: 14px; }
+  .btn-danger { background: transparent; color: #c06050; border: 1px solid rgba(192,96,80,0.25); }
+  .btn-danger:active { background: rgba(192,96,80,0.08); }
+
+  /* ===== 维度选择器 ===== */
+  .dim-group { margin-bottom: 14px; }
+  .dim-label { font-size: 0.78rem; color: var(--text2); margin-bottom: 7px; letter-spacing: 0.5px; }
+  .dim-options { display: flex; gap: 8px; }
+  .dim-opt {
+    flex: 1; text-align: center; padding: 9px 0; border-radius: 22px;
+    font-size: 0.84rem; background: var(--accent-tag); color: var(--text2);
+    cursor: pointer; transition: all 0.2s; user-select: none;
+    -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px;
+  }
+  .dim-opt.active { background: var(--text); color: #fff; }
+
+  .result-box {
+    text-align: center; padding: 20px 16px; margin-top: 12px;
+    border-radius: var(--radius-sm); background: #faf7f2; min-height: 60px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.25s;
+  }
+  .result-text { font-size: 1.1rem; font-weight: 600; letter-spacing: 1px; color: var(--text); }
+  .result-placeholder { font-size: 0.88rem; color: var(--text3); }
+
+  /* ===== 切换开关 ===== */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+  .toggle-label { font-size: 0.9rem; letter-spacing: 0.5px; }
+  .toggle-track {
+    width: 52px; height: 30px; border-radius: 15px; background: #d5cfc6;
+    cursor: pointer; position: relative; transition: background 0.25s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .toggle-track.on { background: var(--accent-green); }
+  .toggle-knob {
+    width: 26px; height: 26px; border-radius: 13px; background: #fff;
+    position: absolute; top: 2px; left: 2px; transition: left 0.25s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+  .toggle-track.on .toggle-knob { left: 24px; }
+  .status-text { font-size: 0.88rem; color: var(--text2); margin-top: 8px; letter-spacing: 0.5px; }
+  .status-text strong { color: var(--text); font-weight: 500; }
+
+  /* ===== 奶茶 ===== */
+  .tea-section { margin-bottom: 14px; }
+  .tea-section .dim-label { font-size: 0.78rem; color: var(--text2); margin-bottom: 7px; letter-spacing: 0.5px; }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    padding: 7px 16px; border-radius: 20px; font-size: 0.82rem;
+    background: var(--accent-tag); color: var(--text2);
+    cursor: pointer; transition: all 0.2s; user-select: none;
+    -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px;
+  }
+  .pill.active { background: var(--accent-tea); color: #fff; }
+
+  /* ===== 列表 ===== */
+  .history-list { max-height: 200px; overflow-y: auto; margin-top: 14px; }
+  .history-list::-webkit-scrollbar { width: 3px; }
+  .history-list::-webkit-scrollbar-thumb { background: #e0d9ce; border-radius: 2px; }
+  .history-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid #f0ece4; font-size: 0.85rem;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-item .hi-time { color: var(--text2); letter-spacing: 0.5px; }
+  .history-item .hi-del {
+    color: var(--text3); cursor: pointer; font-size: 0.85rem; padding: 4px 8px; transition: color 0.2s;
+  }
+  .history-item .hi-del:hover { color: #c06050; }
+  .history-empty {
+    text-align: center; color: var(--text3); padding: 20px 0; font-size: 0.85rem; letter-spacing: 0.5px;
+  }
+  .history-count { font-size: 0.78rem; color: var(--text3); margin-top: 10px; letter-spacing: 0.5px; }
+
+  /* ===== 留言板 ===== */
+  .msg-input-row { display: flex; gap: 10px; }
+  .msg-input-row input {
+    flex: 1; border: 1px solid var(--border); border-radius: 24px;
+    padding: 10px 18px; font-size: 0.88rem; font-family: var(--font);
+    color: var(--text); background: #faf7f2; outline: none;
+    transition: border-color 0.2s; letter-spacing: 0.5px;
+  }
+  .msg-input-row input:focus { border-color: #b8a590; }
+  .msg-input-row input::placeholder { color: var(--text3); }
+  .msg-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .msg-item {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 10px 14px; background: #faf7f2; border-radius: var(--radius-sm); gap: 10px;
+  }
+  .msg-item .msg-body { flex: 1; min-width: 0; }
+  .msg-item .msg-text { font-size: 0.88rem; word-break: break-word; letter-spacing: 0.5px; }
+  .msg-item .msg-time { font-size: 0.72rem; color: var(--text3); margin-top: 3px; }
+  .msg-item .msg-del {
+    color: var(--text3); cursor: pointer; font-size: 0.82rem; padding: 4px 6px;
+    transition: color 0.2s; flex-shrink: 0;
+  }
+  .msg-item .msg-del:hover { color: #c06050; }
+
+  /* ===== 页脚 ===== */
+  .footer {
+    text-align: center; color: var(--text3); font-size: 0.72rem;
+    letter-spacing: 2px; padding: 20px 0 0;
+  }
+
+  /* ===== 管理弹窗（大） ===== */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(44, 36, 22, 0.3);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    width: 380px; max-width: 90vw;
+    max-height: 78vh;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-shrink: 0;
+  }
+  .modal-header h3 {
+    font-size: 1rem; font-weight: 600; letter-spacing: 1px;
+  }
+  .modal-close {
+    width: 28px; height: 28px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text3);
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .modal-close:hover { border-color: #b8a590; color: var(--text2); }
+  .modal-body {
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+  }
+  .modal-body::-webkit-scrollbar { width: 3px; }
+  .modal-body::-webkit-scrollbar-thumb { background: #e0d9ce; border-radius: 2px; }
+  .modal-body .add-row {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .modal-body .add-row input {
+    flex: 1;
+    border: 1px solid var(--border); border-radius: 22px;
+    padding: 8px 14px; font-size: 0.85rem; font-family: var(--font);
+    color: var(--text); background: #faf7f2; outline: none;
+    letter-spacing: 0.5px;
+  }
+  .modal-body .add-row input:focus { border-color: #b8a590; }
+  .modal-body .add-row input::placeholder { color: var(--text3); }
+  .modal-section-title {
+    font-size: 0.78rem; color: var(--text2); letter-spacing: 1px;
+    margin: 16px 0 8px; padding-top: 12px; border-top: 1px solid #f0ece4;
+  }
+  .modal-section-title:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+  .modal-item-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 10px; border-radius: 8px; font-size: 0.84rem;
+    transition: background 0.15s;
+  }
+  .modal-item-row:hover { background: #faf7f2; }
+  .modal-item-row .item-text { flex: 1; letter-spacing: 0.5px; }
+  .modal-item-row .item-del {
+    color: var(--text3); cursor: pointer; font-size: 0.85rem;
+    padding: 2px 6px; transition: color 0.2s;
+  }
+  .modal-item-row .item-del:hover { color: #c06050; }
+  .modal-item-row .item-note {
+    font-size: 0.7rem; color: var(--text3); margin-right: 8px;
+  }
+  .modal-footer {
+    display: flex; gap: 10px; justify-content: center;
+    padding-top: 16px; border-top: 1px solid #f0ece4; margin-top: 16px;
+    flex-shrink: 0;
+  }
+  .modal-empty {
+    text-align: center; color: var(--text3); padding: 16px 0; font-size: 0.84rem;
+  }
+
+  /* ===== 食物分类标签 ===== */
+  .food-cat-label {
+    font-size: 0.76rem; color: var(--text2); letter-spacing: 0.5px;
+    margin: 12px 0 4px; padding: 4px 8px;
+    background: var(--accent-tag); border-radius: 6px; display: inline-block;
+  }
+
+  @media (max-width: 400px) {
+    .main { padding: 24px 14px 48px; }
+    .card { padding: 18px 16px; }
+    .modal { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="main">
+  <!-- 头部 -->
+  <div class="header">
+    <h1>📋 日常助手</h1>
+    <div class="date" id="todayDate"></div>
+  </div>
+
+  <!-- 用户切换 -->
+  <div class="user-tabs" id="userTabs"></div>
+
+  <!-- 天气卡片 -->
+  <div class="weather-row" id="weatherRow">
+    <div class="weather-card" id="weatherCard0">
+      <div class="wc-emoji">🌤️</div>
+      <div class="wc-city" id="wcCity0">玉环市</div>
+      <div class="wc-temp weather-loading">
+        <span class="wc-loading-dot">●</span><span class="wc-loading-dot">●</span><span class="wc-loading-dot">●</span>
+      </div>
+      <div class="wc-desc" id="wcDesc0">加载中…</div>
+      <div class="wc-info" id="wcInfo0"></div>
+      <div class="wc-dress" id="wcDress0" style="display:none;"></div>
+    </div>
+    <div class="weather-card" id="weatherCard1">
+      <div class="wc-emoji">☁️</div>
+      <div class="wc-city" id="wcCity1">杭州市</div>
+      <div class="wc-temp weather-loading">
+        <span class="wc-loading-dot">●</span><span class="wc-loading-dot">●</span><span class="wc-loading-dot">●</span>
+      </div>
+      <div class="wc-desc" id="wcDesc1">加载中…</div>
+      <div class="wc-info" id="wcInfo1"></div>
+      <div class="wc-dress" id="wcDress1" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- ====== 1. 拉屎 ====== -->
+  <div class="card" id="poopCard">
+    <div class="card-head">
+      <div class="card-title">🚽 拉屎记录</div>
+      <div class="card-actions">
+        <button class="gear-btn" id="poopGearBtn" title="管理记录">⚙️</button>
+        <span class="card-icon">🧻</span>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" id="poopBtn">📝 记录本次 💩</button>
+    <div class="history-list" id="poopList">
+      <div class="history-empty">🪴 暂无记录，今天还没蹲坑呢～</div>
+    </div>
+    <div class="history-count" id="poopCount"></div>
+  </div>
+
+  <!-- ====== 2. 吃什么 ====== -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">🍽️ 今天吃什么</div>
+      <div class="card-actions">
+        <button class="gear-btn" id="foodGearBtn" title="管理菜单">⚙️</button>
+        <span class="card-icon">🥢</span>
+      </div>
+    </div>
+
+    <div class="dim-group">
+      <div class="dim-label">🌶️ 口味偏好</div>
+      <div class="dim-options" id="dimTaste">
+        <div class="dim-opt active" data-v="light">🥒 清淡</div>
+        <div class="dim-opt" data-v="heavy">🌶️ 重口</div>
+      </div>
+    </div>
+    <div class="dim-group">
+      <div class="dim-label">🍜 汤水偏好</div>
+      <div class="dim-options" id="dimSoup">
+        <div class="dim-opt active" data-v="with">🍲 带汤</div>
+        <div class="dim-opt" data-v="without">🍝 不带汤</div>
+      </div>
+    </div>
+    <div class="dim-group">
+      <div class="dim-label">🍚 主食偏好</div>
+      <div class="dim-options" id="dimStaple">
+        <div class="dim-opt active" data-v="rice">🍚 米饭</div>
+        <div class="dim-opt" data-v="noodle">🍜 面食</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="foodRollBtn">🎲 随机推荐</button>
+    <div class="result-box" id="foodResult">
+      <div class="result-placeholder">👆 选好口味，点一下试试手气～</div>
+    </div>
+  </div>
+
+  <!-- ====== 3. 工作 ====== -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">💼 今日工作</div>
+      <div class="card-actions">
+        <button class="gear-btn" id="workGearBtn" title="管理工作">⚙️</button>
+        <span class="card-icon">🏢</span>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <span class="toggle-label">🌙 今日加班</span>
+      <div class="toggle-track" id="overtimeToggle">
+        <div class="toggle-knob"></div>
+      </div>
+    </div>
+    <div class="status-text" id="workStatus"></div>
+    <div class="result-box" style="margin-top:10px;min-height:0;padding:10px 14px;cursor:pointer;" id="workNoteBox" title="点击编辑备注">
+      <div style="font-size:0.82rem;color:var(--text3);letter-spacing:0.5px;" id="workNoteDisplay">📝 点击添加今日工作备注…</div>
+    </div>
+  </div>
+
+  <!-- ====== 4. 留言板 ====== -->
+  <div class="card" id="msgCard">
+    <div class="card-head">
+      <div class="card-title">💬 留言板</div>
+      <div class="card-actions">
+        <button class="gear-btn" id="msgGearBtn" title="管理留言">⚙️</button>
+        <span class="card-icon">📝</span>
+      </div>
+    </div>
+    <div class="msg-input-row">
+      <input type="text" id="msgInput" placeholder="✍️ 写点什么…" maxlength="200">
+      <button class="btn btn-primary btn-sm" id="msgSendBtn">📨 发送</button>
+    </div>
+    <div class="msg-list" id="msgList">
+      <div class="history-empty">💭 暂无留言，说点什么吧～</div>
+    </div>
+  </div>
+
+  <!-- ====== 5. 奶茶 ====== -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">🧋 奶茶推荐</div>
+      <div class="card-actions">
+        <button class="gear-btn" id="teaGearBtn" title="管理选项">⚙️</button>
+        <span class="card-icon">✨</span>
+      </div>
+    </div>
+
+    <div class="tea-section">
+      <div class="tag-with-add">
+        <div class="dim-label">🏪 品牌选择</div>
+        <div class="add-opt-btn" id="addBrandBtn" title="添加品牌">＋</div>
+      </div>
+      <div class="pill-row all" id="brandPills"></div>
+    </div>
+    <div class="tea-section">
+      <div class="tag-with-add">
+        <div class="dim-label">🍵 品类选择</div>
+        <div class="add-opt-btn" id="addCategoryBtn" title="添加品类">＋</div>
+      </div>
+      <div class="pill-row all" id="categoryPills"></div>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="teaRollBtn">🎰 随机推荐</button>
+    <div class="result-box" id="teaResult">
+      <div class="result-placeholder">👆 勾选品牌和品类，摇一杯奶茶～</div>
+    </div>
+  </div>
+
+  <div class="footer">🍃 日常助手 · 过好每一天 🍃</div>
+</div>
+
+<!-- ====== 通用管理弹窗 ====== -->
+<div class="modal-overlay hidden" id="manageModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="manageModalTitle">管理</h3>
+      <button class="modal-close" id="manageModalClose">✕</button>
+    </div>
+    <div class="modal-body" id="manageModalBody"></div>
+    <div class="modal-footer" id="manageModalFooter"></div>
+  </div>
+</div>
+
+<!-- 改名弹窗 -->
+<div class="modal-overlay hidden" id="renameModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ 编辑个人信息</h3>
+      <button class="modal-close" id="renameModalClose">✕</button>
+    </div>
+    <div style="margin-bottom:12px;">
+      <div class="dim-label" style="margin-bottom:6px;">😀 选择头像</div>
+      <div class="pill-row all" id="emojiPills"></div>
+    </div>
+    <input type="text" id="renameInput" placeholder="输入昵称…" maxlength="6" style="width:100%;border:1px solid var(--border);border-radius:24px;padding:10px 18px;font-size:0.88rem;font-family:var(--font);color:var(--text);background:#faf7f2;outline:none;margin-bottom:12px;">
+    <input type="text" id="renameCityInput" placeholder="🏙️ 城市名（如：杭州市）" maxlength="10" style="width:100%;border:1px solid var(--border);border-radius:24px;padding:10px 18px;font-size:0.88rem;font-family:var(--font);color:var(--text);background:#faf7f2;outline:none;margin-bottom:16px;">
+    <div class="btn-row" style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-primary btn-sm" id="renameSaveBtn">✅ 保存</button>
+      <button class="btn btn-outline btn-sm" id="renameCancelBtn">❌ 取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== 工具函数 ====================
+const LS = {
+  get(k, fallback) {
+    try { const v = localStorage.getItem("dh_" + k); return v ? JSON.parse(v) : fallback; }
+    catch { return fallback; }
+  },
+  set(k, val) {
+    try { localStorage.setItem("dh_" + k, JSON.stringify(val)); } catch {}
+  },
+};
+
+function escHtml(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function fmtTime(iso) {
+  const t = new Date(iso);
+  const pad = n => String(n).padStart(2, "0");
+  return t.getFullYear() + "-" + pad(t.getMonth() + 1) + "-" + pad(t.getDate()) +
+    " " + pad(t.getHours()) + ":" + pad(t.getMinutes()) + ":" + pad(t.getSeconds());
+}
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+// ==================== 用户管理 ====================
+const EMOJI_POOL = ["🐱","🐰","🐶","🐻","🐼","🐨","🦊","🐸","🐵","🐙","🦄","🐧","🐥","🦋","🐞","🐝","🐳","🐬","🌟","🌸","🍀","🎀","💎","🔥","⚡","🌈","🍓","🍑","🍒","🥑","🧸","🎈","🎵","🍭"];
+
+const defaultUsers = [
+  { name: "我", emoji: "🐱", city: "玉环市", lat: 28.13, lon: 121.23 },
+  { name: "TA", emoji: "🐰", city: "杭州市", lat: 30.25, lon: 120.16 },
+];
+let users = LS.get("users", defaultUsers);
+let activeUser = LS.get("activeUser", 0);
+
+function saveUsers() { LS.set("users", users); }
+function getUserPrefix() { return "u" + activeUser + "_"; }
+
+function renderUserTabs() {
+  const container = document.getElementById("userTabs");
+  container.innerHTML = users.map((u, i) => `
+    <button class="user-tab ${i === activeUser ? "active" : ""}" data-user="${i}">
+      <span class="tab-emoji">${escHtml(u.emoji)}</span>
+      <div style="text-align:center;line-height:1.2;">
+        <span class="tab-name">${escHtml(u.name)}</span>
+        <div style="font-size:0.65rem;color:var(--text3);letter-spacing:0.5px;">${escHtml(u.city)}</div>
+      </div>
+      <span class="tab-edit-icon" data-edit="${i}">✎</span>
+    </button>
+  `).join("");
+
+  container.querySelectorAll(".user-tab").forEach(tab => {
+    tab.addEventListener("click", e => {
+      // 如果点了编辑图标
+      if (e.target.classList.contains("tab-edit-icon")) {
+        showRenameModal(parseInt(e.target.dataset.edit));
+        return;
+      }
+      const idx = parseInt(tab.dataset.user);
+      if (idx === activeUser) {
+        showRenameModal(idx);
+        return;
+      }
+      activeUser = idx;
+      LS.set("activeUser", activeUser);
+      renderUserTabs();
+      updateWeatherActive();
+      renderPoop();
+      renderMessages();
+    });
+    // 长按编辑（移动端）
+    let pressTimer;
+    tab.addEventListener("touchstart", () => {
+      pressTimer = setTimeout(() => showRenameModal(parseInt(tab.dataset.user)), 600);
+    });
+    tab.addEventListener("touchend", () => clearTimeout(pressTimer));
+    tab.addEventListener("touchmove", () => clearTimeout(pressTimer));
+  });
+}
+
+// ====== 改名弹窗 ======
+let renameTarget = -1;
+let selectedEmoji = "🐱";
+
+function showRenameModal(idx) {
+  renameTarget = idx;
+  selectedEmoji = users[idx].emoji;
+  document.getElementById("renameInput").value = users[idx].name;
+  document.getElementById("renameCityInput").value = users[idx].city || "";
+  renderEmojiPills();
+  document.getElementById("renameModal").classList.remove("hidden");
+  document.getElementById("renameInput").focus();
+}
+
+function renderEmojiPills() {
+  const container = document.getElementById("emojiPills");
+  container.innerHTML = EMOJI_POOL.map(e => `
+    <span class="pill ${e === selectedEmoji ? "active" : ""}" data-e="${escHtml(e)}">${escHtml(e)}</span>
+  `).join("");
+  container.querySelectorAll(".pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      selectedEmoji = pill.dataset.e;
+      renderEmojiPills();
+    });
+  });
+}
+
+document.getElementById("renameSaveBtn").addEventListener("click", () => {
+  const v = document.getElementById("renameInput").value.trim();
+  const cityV = document.getElementById("renameCityInput").value.trim();
+  if (v && renameTarget >= 0) {
+    users[renameTarget].name = v;
+    users[renameTarget].emoji = selectedEmoji;
+    if (cityV) users[renameTarget].city = cityV;
+    saveUsers();
+    renderUserTabs();
+    updateWeatherCities();
+    onUserChange();
+    // 清除天气缓存，触发重新获取
+    const cache = LS.get(WEATHER_CACHE_KEY, {});
+    delete cache["u" + renameTarget];
+    LS.set(WEATHER_CACHE_KEY, cache);
+    fetchWeatherForUser(renameTarget);
+  }
+  document.getElementById("renameModal").classList.add("hidden");
+});
+document.getElementById("renameCancelBtn").addEventListener("click", () => {
+  document.getElementById("renameModal").classList.add("hidden");
+});
+document.getElementById("renameModalClose").addEventListener("click", () => {
+  document.getElementById("renameModal").classList.add("hidden");
+});
+document.getElementById("renameInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") document.getElementById("renameSaveBtn").click();
+});
+
+function onUserChange() {
+  renderPoop();
+  renderMessages();
+  updateCardLabels();
+}
+
+function updateCardLabels() {
+  const u = users[activeUser];
+  document.getElementById("poopCard").querySelector(".card-title").innerHTML =
+    "🚽 " + escHtml(u.name) + "的拉屎记录";
+  document.getElementById("msgCard").querySelector(".card-title").innerHTML =
+    "💬 " + escHtml(u.name) + "的留言板";
+  document.getElementById("msgInput").placeholder = "✍️ " + escHtml(u.name) + "想说什么…";
+}
+
+renderUserTabs();
+
+// ==================== 天气 ====================
+const WEATHER_CACHE_KEY = "weatherCache";
+const WEATHER_CACHE_TTL = 30 * 60 * 1000;
+
+function getDressClass(temp) {
+  if (temp >= 30) return "dress-hot";
+  if (temp >= 23) return "dress-warm";
+  if (temp >= 15) return "dress-cool";
+  if (temp >= 5)  return "dress-cold";
+  return "dress-freeze";
+}
+
+function getDressAdvice(temp) {
+  if (temp >= 32) return "🩳 短袖短裤 · 注意防晒";
+  if (temp >= 28) return "👕 短袖 · 轻薄透气";
+  if (temp >= 23) return "👔 薄长袖/衬衫";
+  if (temp >= 18) return "🧥 薄外套 · 早晚加衣";
+  if (temp >= 12) return "🧥 外套/卫衣 · 注意保暖";
+  if (temp >= 6)  return "🧣 厚外套/毛衣";
+  if (temp >= 0)  return "🧤 棉服/轻薄羽绒";
+  return "🧣 厚羽绒服 · 围巾手套";
+}
+
+function getWeatherEmoji(code) {
+  if (code <= 3)  return "☀️";
+  if (code <= 48) return "⛅";
+  if (code <= 55) return "🌧️";
+  if (code <= 57) return "🌨️";
+  if (code <= 65) return "🌧️";
+  if (code <= 67) return "🌨️";
+  if (code <= 77) return "❄️";
+  if (code <= 82) return "🌧️";
+  if (code <= 86) return "🌨️";
+  return "⚡";
+}
+
+function getWeatherDesc(code) {
+  if (code === 0)  return "☀️ 晴朗";
+  if (code <= 3)   return "🌤️ 晴间多云";
+  if (code <= 48)  return "☁️ 多云/雾";
+  if (code <= 55)  return "🌧️ 小雨";
+  if (code <= 57)  return "🌨️ 冻雨";
+  if (code <= 65)  return "🌧️ 中雨";
+  if (code <= 67)  return "🌨️ 冻雨";
+  if (code <= 77)  return "❄️ 雪";
+  if (code <= 82)  return "🌧️ 阵雨";
+  if (code <= 86)  return "🌨️ 阵雪";
+  return "⛈️ 雷暴";
+}
+
+async function fetchWeatherForUser(userIndex) {
+  const u = users[userIndex];
+  const card = document.getElementById("weatherCard" + userIndex);
+  if (!card) return;
+
+  const cache = LS.get(WEATHER_CACHE_KEY, {});
+  const cacheKey = "u" + userIndex;
+  if (cache[cacheKey] && Date.now() - cache[cacheKey].ts < WEATHER_CACHE_TTL) {
+    renderWeatherCard(userIndex, cache[cacheKey].data);
+    return;
+  }
+
+  try {
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" + u.lat +
+      "&longitude=" + u.lon + "&current_weather=true&timezone=Asia/Shanghai";
+    const resp = await fetch(url);
+    const json = await resp.json();
+    const cw = json.current_weather;
+    const data = {
+      temp: Math.round(cw.temperature),
+      code: cw.weathercode,
+      wind: Math.round(cw.windspeed),
+      humidity: "—",
+      time: cw.time,
+    };
+    cache[cacheKey] = { ts: Date.now(), data };
+    LS.set(WEATHER_CACHE_KEY, cache);
+    renderWeatherCard(userIndex, data);
+  } catch {
+    const tempEl = card.querySelector(".wc-temp");
+    const descEl = card.querySelector(".wc-desc");
+    if (tempEl) tempEl.innerHTML = '<span style="font-size:0.8rem;">加载失败</span>';
+    if (descEl) descEl.textContent = "请检查网络后刷新";
+  }
+}
+
+function renderWeatherCard(userIndex, data) {
+  const card = document.getElementById("weatherCard" + userIndex);
+  if (!card) return;
+
+  const dressClass = getDressClass(data.temp);
+  const dressAdvice = getDressAdvice(data.temp);
+  const emoji = getWeatherEmoji(data.code);
+
+  card.querySelector(".wc-emoji").textContent = emoji;
+  card.querySelector(".wc-temp").innerHTML = data.temp + "<span style=\"font-size:0.9rem;font-weight:400;color:var(--text2);\">°C</span>";
+  card.querySelector(".wc-temp").classList.remove("weather-loading");
+  card.querySelector(".wc-desc").textContent = getWeatherDesc(data.code);
+  card.querySelector(".wc-info").innerHTML = "💨 " + data.wind + " km/h · 💧 " + data.humidity;
+  const dressEl = card.querySelector(".wc-dress");
+  dressEl.textContent = "🧥 " + dressAdvice;
+  dressEl.className = "wc-dress " + dressClass;
+  dressEl.style.display = "inline-block";
+}
+
+async function fetchAllWeather() {
+  await Promise.all([fetchWeatherForUser(0), fetchWeatherForUser(1)]);
+}
+
+function updateWeatherCities() {
+  document.getElementById("wcCity0").textContent = users[0].city;
+  document.getElementById("wcCity1").textContent = users[1].city;
+}
+
+fetchAllWeather();
+updateWeatherCities();
+setInterval(fetchAllWeather, WEATHER_CACHE_TTL);
+
+// 天气卡片点击切换用户
+function updateWeatherActive() {
+  document.getElementById("weatherCard0").classList.toggle("active-weather", activeUser === 0);
+  document.getElementById("weatherCard1").classList.toggle("active-weather", activeUser === 1);
+}
+document.getElementById("weatherCard0").addEventListener("click", () => {
+  if (activeUser !== 0) {
+    activeUser = 0;
+    LS.set("activeUser", activeUser);
+    renderUserTabs();
+    updateWeatherActive();
+    onUserChange();
+  }
+});
+document.getElementById("weatherCard1").addEventListener("click", () => {
+  if (activeUser !== 1) {
+    activeUser = 1;
+    LS.set("activeUser", activeUser);
+    renderUserTabs();
+    updateWeatherActive();
+    onUserChange();
+  }
+});
+updateWeatherActive();
+
+document.getElementById("todayDate").textContent =
+  new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
+
+// ==================== 通用管理弹窗 ====================
+const $manageModal = document.getElementById("manageModal");
+const $manageTitle = document.getElementById("manageModalTitle");
+const $manageBody = document.getElementById("manageModalBody");
+const $manageFooter = document.getElementById("manageModalFooter");
+
+function openManageModal(title, renderBody, renderFooter) {
+  $manageTitle.textContent = title;
+  $manageBody.innerHTML = "";
+  $manageFooter.innerHTML = "";
+  if (renderBody) renderBody($manageBody);
+  if (renderFooter) renderFooter($manageFooter);
+  $manageModal.classList.remove("hidden");
+}
+
+function closeManageModal() {
+  $manageModal.classList.add("hidden");
+}
+
+document.getElementById("manageModalClose").addEventListener("click", closeManageModal);
+$manageModal.addEventListener("click", e => { if (e.target === $manageModal) closeManageModal(); });
+
+// ==================== 选项数据 ====================
+const defaultFoods = {
+  "light-with-rice":   ["🍚 清蒸鲈鱼","🍗 白切鸡","🍳 番茄炒蛋","🦐 西蓝花炒虾仁","🥬 清炒时蔬","🥚 蒸水蛋","🍖 冬瓜排骨汤饭"],
+  "light-with-noodle": ["🍜 阳春面","🐂 清汤牛肉面","🐔 鸡汤米线","🥟 三鲜馄饨","🍅 番茄鸡蛋面","🍄 菌菇面"],
+  "light-without-rice":  ["🥬 白灼菜心配饭","🍖 蒸排骨饭","🦆 盐水鸭饭","🧆 清炖狮子头","🥕 素炒三丝盖饭"],
+  "light-without-noodle":["🧅 葱油拌面","🐔 鸡丝凉面","🥗 素浇面","🫘 炸酱面·少油版"],
+  "heavy-with-rice":   ["🌶️ 麻辣香锅","🥩 回锅肉盖饭","🍖 红烧肉","🐟 水煮鱼","🥢 鱼香肉丝盖饭","🐔 宫保鸡丁","🐟 酸菜鱼饭"],
+  "heavy-with-noodle": ["🍜 重庆小面","🐂 红烧牛肉面","🐚 螺蛳粉","🌶️ 酸辣粉","🥜 担担面","🍝 热干面"],
+  "heavy-without-rice":  ["🥘 干锅花菜盖饭","🐔 辣子鸡饭","🍖 红烧排骨饭","🐂 孜然牛肉盖饭","🫘 铁板豆腐饭"],
+  "heavy-without-noodle":["🌶️ 油泼面","🫘 炸酱面","🍝 炒刀削面","🍜 武汉热干面","🥢 臊子面"],
+};
+const foodCatLabels = {
+  "light-with-rice": "🥒 清淡 · 🍲 带汤 · 🍚 米饭",
+  "light-with-noodle": "🥒 清淡 · 🍲 带汤 · 🍜 面食",
+  "light-without-rice": "🥒 清淡 · 🍝 不带汤 · 🍚 米饭",
+  "light-without-noodle": "🥒 清淡 · 🍝 不带汤 · 🍜 面食",
+  "heavy-with-rice": "🌶️ 重口 · 🍲 带汤 · 🍚 米饭",
+  "heavy-with-noodle": "🌶️ 重口 · 🍲 带汤 · 🍜 面食",
+  "heavy-without-rice": "🌶️ 重口 · 🍝 不带汤 · 🍚 米饭",
+  "heavy-without-noodle": "🌶️ 重口 · 🍝 不带汤 · 🍜 面食",
+};
+
+const defaultBrands = ["🏷️ 喜茶","🍃 奈雪的茶","🐲 霸王茶姬","🌸 茶颜悦色","🍇 古茗","❄️ 蜜雪冰城","🟡 一点点","🟠 CoCo","🍵 茶百道","🏠 沪上阿姨"];
+const defaultCategories = ["🫧 珍珠奶茶","🧀 奶盖茶","🍓 水果茶","🍋 柠檬茶","🫘 烧仙草","🥭 杨枝甘露","🍵 抹茶拿铁","💜 芋泥波波","🧀 芝士茶","🍃 纯茶"];
+
+// ==================== 1. 拉屎记录 ====================
+function getPoopRecords() { return LS.get(getUserPrefix() + "poopRecords", []); }
+function setPoopRecords(r) { LS.set(getUserPrefix() + "poopRecords", r); }
+
+function renderPoop() {
+  const records = getPoopRecords();
+  const list = document.getElementById("poopList");
+  const count = document.getElementById("poopCount");
+  if (records.length === 0) {
+    list.innerHTML = '<div class="history-empty">🪴 暂无记录，今天还没蹲坑呢～</div>';
+    count.textContent = "";
+    return;
+  }
+  const sorted = [...records].reverse();
+  list.innerHTML = sorted.map((r, i) => `
+    <div class="history-item">
+      <span class="hi-time">🕐 ${fmtTime(r.time)}${r.note ? ' · <em>' + escHtml(r.note) + '</em>' : ''}</span>
+      <span class="hi-del" data-idx="${records.indexOf(r)}">🗑️</span>
+    </div>
+  `).join("");
+  list.querySelectorAll(".hi-del").forEach(el => {
+    el.addEventListener("click", () => {
+      const recs = getPoopRecords();
+      recs.splice(parseInt(el.dataset.idx), 1);
+      setPoopRecords(recs);
+      renderPoop();
+    });
+  });
+
+  const today = todayStr();
+  const todayCount = records.filter(r => r.time.startsWith(today)).length;
+  const u = users[activeUser];
+  count.textContent = "📊 " + escHtml(u.name) + "今日 " + todayCount + " 次 💩 · 共 " + records.length + " 条记录";
+}
+
+document.getElementById("poopBtn").addEventListener("click", () => {
+  // 弹出备注弹窗
+  const now = new Date();
+  const timeStr = fmtTime(now.toISOString());
+  openManageModal("💩 记录拉屎 — " + users[activeUser].name,
+    (body) => {
+      body.innerHTML = `
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:0.82rem;color:var(--text2);">🕐 ${timeStr}</div>
+        </div>
+        <input type="text" id="poopNoteInput" placeholder="💬 加个备注（选填）…" maxlength="30"
+          style="width:100%;border:1px solid var(--border);border-radius:24px;padding:10px 18px;
+          font-size:0.9rem;font-family:var(--font);color:var(--text);background:#faf7f2;outline:none;margin-bottom:8px;letter-spacing:0.5px;">
+        <div class="pill-row all" id="quickNotePills" style="margin-bottom:12px;"></div>
+      `;
+      // 快捷备注
+      const quickNotes = ["💩 正常", "💧 拉稀", "🐰 拉羊屎", "🌊 顺畅", "😖 便秘", "💨 拉肚子"];
+      setTimeout(() => {
+        const pillsContainer = document.getElementById("quickNotePills");
+        if (pillsContainer) {
+          pillsContainer.innerHTML = quickNotes.map(n => `
+            <span class="pill" data-note="${escHtml(n)}">${escHtml(n)}</span>
+          `).join("");
+          pillsContainer.querySelectorAll(".pill").forEach(p => {
+            p.addEventListener("click", () => {
+              const input = document.getElementById("poopNoteInput");
+              if (input) input.value = p.dataset.note;
+              pillsContainer.querySelectorAll(".pill").forEach(pp => pp.classList.remove("active"));
+              p.classList.add("active");
+            });
+          });
+        }
+        document.getElementById("poopNoteInput").focus();
+      }, 50);
+    },
+    (footer) => {
+      footer.innerHTML = `
+        <button class="btn btn-primary btn-sm" id="poopNoteSave">✅ 保存记录</button>
+        <button class="btn btn-outline btn-sm" id="poopNoteClose">关闭</button>
+      `;
+      footer.querySelector("#poopNoteSave").addEventListener("click", () => {
+        const noteInput = document.getElementById("poopNoteInput");
+        const note = noteInput ? noteInput.value.trim() : "";
+        const records = getPoopRecords();
+        records.push({ time: now.toISOString(), note });
+        setPoopRecords(records);
+        renderPoop();
+        closeManageModal();
+      });
+      footer.querySelector("#poopNoteClose").addEventListener("click", closeManageModal);
+    }
+  );
+});
+
+// 拉屎管理弹窗
+document.getElementById("poopGearBtn").addEventListener("click", () => {
+  openManageModal("🚽 管理拉屎记录 — " + users[activeUser].name,
+    (body) => {
+      const records = getPoopRecords();
+      // 自定义添加
+      const addDiv = document.createElement("div");
+      addDiv.className = "add-row";
+      addDiv.innerHTML = `
+        <input type="datetime-local" id="poopCustomTime" style="flex:1;">
+        <input type="text" id="poopCustomNote" placeholder="💬 备注（选填）" maxlength="20" style="flex:1.5;">
+        <button class="btn btn-primary btn-xs" id="poopCustomAdd">➕ 添加</button>
+      `;
+      body.appendChild(addDiv);
+
+      // 历史列表
+      if (records.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "modal-empty";
+        empty.textContent = "🪴 暂无记录";
+        body.appendChild(empty);
+      } else {
+        const sorted = [...records].reverse();
+        sorted.forEach(r => {
+          const row = document.createElement("div");
+          row.className = "modal-item-row";
+          const idx = records.indexOf(r);
+          row.innerHTML = `
+            <span class="item-text">🕐 ${fmtTime(r.time)}${r.note ? ' · ' + escHtml(r.note) : ''}</span>
+            <span class="item-del" data-idx="${idx}">🗑️</span>
+          `;
+          row.querySelector(".item-del").addEventListener("click", () => {
+            const recs = getPoopRecords();
+            recs.splice(parseInt(row.querySelector(".item-del").dataset.idx), 1);
+            setPoopRecords(recs);
+            renderPoop();
+            // 重新渲染弹窗
+            document.getElementById("poopGearBtn").click();
+          });
+          body.appendChild(row);
+        });
+      }
+
+      // 绑定自定义添加
+      setTimeout(() => {
+        const addBtn = document.getElementById("poopCustomAdd");
+        if (addBtn) {
+          addBtn.addEventListener("click", () => {
+            const timeVal = document.getElementById("poopCustomTime").value;
+            const noteVal = document.getElementById("poopCustomNote").value.trim();
+            if (!timeVal) return;
+            const recs = getPoopRecords();
+            recs.push({ time: new Date(timeVal).toISOString(), note: noteVal });
+            setPoopRecords(recs);
+            renderPoop();
+            document.getElementById("poopGearBtn").click();
+          });
+        }
+      }, 50);
+    },
+    (footer) => {
+      footer.innerHTML = `
+        <button class="btn btn-danger btn-sm" id="poopClearAll">🗑️ 清空全部</button>
+        <button class="btn btn-outline btn-sm" id="poopModalClose">关闭</button>
+      `;
+      footer.querySelector("#poopClearAll").addEventListener("click", () => {
+        if (!confirm("确定要清空 " + users[activeUser].name + " 的所有拉屎记录吗？")) return;
+        setPoopRecords([]);
+        renderPoop();
+        closeManageModal();
+      });
+      footer.querySelector("#poopModalClose").addEventListener("click", closeManageModal);
+    }
+  );
+});
+
+// ==================== 2. 吃什么 ====================
+function bindDimGroup(id, cb) {
+  const el = document.getElementById(id);
+  el.querySelectorAll(".dim-opt").forEach(opt => {
+    opt.addEventListener("click", () => {
+      el.querySelectorAll(".dim-opt").forEach(o => o.classList.remove("active"));
+      opt.classList.add("active");
+      if (cb) cb(opt.dataset.v);
+    });
+  });
+}
+
+let taste = "light", soup = "with", staple = "rice";
+bindDimGroup("dimTaste", v => { taste = v; });
+bindDimGroup("dimSoup", v => { soup = v; });
+bindDimGroup("dimStaple", v => { staple = v; });
+
+document.getElementById("foodRollBtn").addEventListener("click", () => {
+  const key = taste + "-" + soup + "-" + staple;
+  const allFoods = LS.get("foods", defaultFoods);
+  const pool = allFoods[key] || [];
+  const resultEl = document.getElementById("foodResult");
+  if (pool.length === 0) {
+    resultEl.innerHTML = '<div class="result-placeholder">😅 暂无匹配选项</div>';
+    return;
+  }
+  let count = 0;
+  const max = 16;
+  const interval = setInterval(() => {
+    resultEl.innerHTML = '<div class="result-text" id="foodResultText">' + escHtml(pool[Math.floor(Math.random() * pool.length)]) + '</div>';
+    count++;
+    if (count >= max) {
+      clearInterval(interval);
+      resultEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="result-text" id="foodResultText" contenteditable="true"
+            style="cursor:text;outline:none;border-bottom:1px dashed transparent;transition:border-color 0.2s;"
+            onfocus="this.style.borderBottomColor='var(--text3)'"
+            onblur="this.style.borderBottomColor='transparent'"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+            ${escHtml(pool[Math.floor(Math.random() * pool.length)])}
+          </div>
+          <span style="font-size:0.7rem;color:var(--text3);cursor:default;" title="点击文字可编辑">✎</span>
+        </div>
+      `;
+      const el = resultEl.querySelector("#foodResultText");
+      if (el) { el.style.transform = "scale(1.08)"; setTimeout(() => { el.style.transform = "scale(1)"; }, 180); }
+    }
+  }, 65);
+});
+
+// 吃什么管理弹窗
+document.getElementById("foodGearBtn").addEventListener("click", () => {
+  const allFoods = LS.get("foods", JSON.parse(JSON.stringify(defaultFoods)));
+
+  openManageModal("🍽️ 管理食物选项",
+    (body) => {
+      // 添加行
+      const addDiv = document.createElement("div");
+      addDiv.className = "add-row";
+      addDiv.innerHTML = `
+        <select id="foodCatSelect" style="flex:1.2;border:1px solid var(--border);border-radius:22px;padding:8px 10px;font-size:0.82rem;font-family:var(--font);color:var(--text);background:#faf7f2;outline:none;">
+          ${Object.entries(foodCatLabels).map(([k, v]) => '<option value="' + k + '">' + v + '</option>').join("")}
+        </select>
+        <input type="text" id="foodCustomInput" placeholder="🍜 输入菜名…" maxlength="20" style="flex:1.5;">
+        <button class="btn btn-primary btn-xs" id="foodCustomAdd">➕ 添加</button>
+      `;
+      body.appendChild(addDiv);
+
+      // 分组显示
+      Object.entries(foodCatLabels).forEach(([key, label]) => {
+        const title = document.createElement("div");
+        title.className = "food-cat-label";
+        title.textContent = label + "（" + (allFoods[key] || []).length + "）";
+        body.appendChild(title);
+
+        const items = allFoods[key] || [];
+        if (items.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "modal-empty";
+          empty.textContent = "暂无菜品";
+          body.appendChild(empty);
+        } else {
+          items.forEach(item => {
+            const row = document.createElement("div");
+            row.className = "modal-item-row";
+            row.innerHTML = `
+              <span class="item-text">${escHtml(item)}</span>
+              <span class="item-del" data-key="${key}" data-item="${escHtml(item)}">🗑️</span>
+            `;
+            row.querySelector(".item-del").addEventListener("click", () => {
+              const k = row.querySelector(".item-del").dataset.key;
+              const it = row.querySelector(".item-del").dataset.item;
+              allFoods[k] = (allFoods[k] || []).filter(x => x !== it);
+              LS.set("foods", allFoods);
+              document.getElementById("foodGearBtn").click();
+            });
+            body.appendChild(row);
+          });
+        }
+      });
+
+      // 绑定添加
+      setTimeout(() => {
+        const addBtn = document.getElementById("foodCustomAdd");
+        if (addBtn) {
+          addBtn.addEventListener("click", () => {
+            const cat = document.getElementById("foodCatSelect").value;
+            const val = document.getElementById("foodCustomInput").value.trim();
+            if (!val) return;
+            if (!allFoods[cat]) allFoods[cat] = [];
+            if (!allFoods[cat].includes(val)) {
+              allFoods[cat].push(val);
+              LS.set("foods", allFoods);
+              document.getElementById("foodGearBtn").click();
+            }
+          });
+        }
+      }, 50);
+    },
+    (footer) => {
+      footer.innerHTML = `
+        <button class="btn btn-danger btn-sm" id="foodResetBtn">🔄 恢复默认</button>
+        <button class="btn btn-outline btn-sm" id="foodModalClose">关闭</button>
+      `;
+      footer.querySelector("#foodResetBtn").addEventListener("click", () => {
+        if (!confirm("确定要恢复所有食物选项为默认值吗？自定义的菜品将丢失。")) return;
+        LS.set("foods", JSON.parse(JSON.stringify(defaultFoods)));
+        closeManageModal();
+      });
+      footer.querySelector("#foodModalClose").addEventListener("click", closeManageModal);
+    }
+  );
+});
+
+// ==================== 3. 工作 ====================
+function getTodayWork() {
+  const today = todayStr();
+  const data = LS.get("workData", {});
+  if (data.date !== today) return { date: today, overtime: false, note: "" };
+  return data;
+}
+function saveTodayWork(data) { LS.set("workData", data); }
+let workData = getTodayWork();
+
+function renderWork() {
+  const toggle = document.getElementById("overtimeToggle");
+  const status = document.getElementById("workStatus");
+  if (workData.overtime) {
+    toggle.classList.add("on");
+    status.innerHTML = '😮‍💨 今天状态：<strong>加班</strong>，辛苦啦 💪';
+  } else {
+    toggle.classList.remove("on");
+    status.innerHTML = '🎉 今天状态：<strong>不加班</strong>，早点回家 🏠';
+  }
+  // 渲染备注
+  const noteDisplay = document.getElementById("workNoteDisplay");
+  if (noteDisplay) {
+    noteDisplay.textContent = workData.note ? "📝 " + workData.note : "📝 点击添加今日工作备注…";
+  }
+}
+
+// 工作备注点击编辑
+document.getElementById("workNoteBox").addEventListener("click", () => {
+  openManageModal("📝 编辑工作备注",
+    (body) => {
+      body.innerHTML = `
+        <textarea id="workNoteArea" placeholder="✍️ 记录今天的工作内容…" maxlength="100"
+          style="width:100%;border:1px solid var(--border);border-radius:14px;padding:12px 16px;
+          font-size:0.9rem;font-family:var(--font);color:var(--text);background:#faf7f2;outline:none;
+          resize:none;height:80px;letter-spacing:0.5px;">${escHtml(workData.note || "")}</textarea>
+      `;
+      setTimeout(() => document.getElementById("workNoteArea").focus(), 100);
+    },
+    (footer) => {
+      footer.innerHTML = `
+        <button class="btn btn-primary btn-sm" id="workNoteSaveBtn">💾 保存</button>
+        <button class="btn btn-outline btn-sm" id="workNoteCloseBtn">关闭</button>
+      `;
+      footer.querySelector("#workNoteSaveBtn").addEventListener("click", () => {
+        const area = document.getElementById("workNoteArea");
+        workData.note = area ? area.value.trim() : "";
+        saveTodayWork(workData);
+        const history = LS.get("workHistory", []);
+        const exist = history.findIndex(h => h.date === workData.date);
+        if (exist >= 0) history[exist] = { ...workData };
+        else history.push({ ...workData });
+        LS.set("workHistory", history);
+        renderWork();
+        closeManageModal();
+      });
+      footer.querySelector("#workNoteCloseBtn").addEventListener("click", closeManageModal);
+    }
+  );
+});
+
+document.getElementById("overtimeToggle").addEventListener("click", () => {
+  workData.overtime = !workData.overtime;
+  saveTodayWork(workData);
+  renderWork();
+});
+
+// 工作管理弹窗
+document.getElementById("workGearBtn").addEventListener("click", () => {
+  openManageModal("💼 今日工作管理",
+    (body) => {
+      // 加班切换
+      const toggleRow = document.createElement("div");
+      toggleRow.className = "toggle-row";
+      toggleRow.innerHTML = `
+        <span class="toggle-label">🌙 今日加班</span>
+        <div class="toggle-track ${workData.overtime ? "on" : ""}" id="modalOvertimeToggle">
+          <div class="toggle-knob"></div>
+        </div>
+      `;
+      body.appendChild(toggleRow);
+
+      const statusText = document.createElement("div");
+      statusText.className = "status-text";
+      statusText.id = "modalWorkStatus";
+      statusText.innerHTML = workData.overtime
+        ? '😮‍💨 今天状态：<strong>加班</strong>，辛苦啦 💪'
+        : '🎉 今天状态：<strong>不加班</strong>，早点回家 🏠';
+      body.appendChild(statusText);
+
+      // 备注
+      const noteSection = document.createElement("div");
+      noteSection.className = "modal-section-title";
+      noteSection.textContent = "📝 今日工作备注";
+      body.appendChild(noteSection);
+
+      const noteInput = document.createElement("input");
+      noteInput.type = "text";
+      noteInput.id = "workNoteInput";
+      noteInput.placeholder = "✍️ 记录今天的工作内容…";
+      noteInput.maxLength = 100;
+      noteInput.value = workData.note || "";
+      noteInput.style.cssText = "width:100%;border:1px solid var(--border);border-radius:24px;padding:10px 18px;font-size:0.88rem;font-family:var(--font);color:var(--text);background:#faf7f2;outline:none;margin-top:8px;letter-spacing:0.5px;";
+      body.appendChild(noteInput);
+
+      // 历史
+      const histTitle = document.createElement("div");
+      histTitle.className = "modal-section-title";
+      histTitle.textContent = "📋 历史工作记录";
+      body.appendChild(histTitle);
+
+      const allWork = LS.get("workHistory", []);
+      if (allWork.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "modal-empty";
+        empty.textContent = "暂无历史记录";
+        body.appendChild(empty);
+      } else {
+        [...allWork].reverse().slice(0, 20).forEach(w => {
+          const row = document.createElement("div");
+          row.className = "modal-item-row";
+          row.innerHTML = `
+            <span class="item-text">📅 ${w.date} ${w.overtime ? "🌙 加班" : "🏠 不加班"}${w.note ? " · " + escHtml(w.note) : ""}</span>
+            <span class="item-del" data-date="${w.date}">🗑️</span>
+          `;
+          row.querySelector(".item-del").addEventListener("click", () => {
+            const d = row.querySelector(".item-del").dataset.date;
+            const history = LS.get("workHistory", []);
+            LS.set("workHistory", history.filter(x => x.date !== d));
+            document.getElementById("workGearBtn").click();
+          });
+          body.appendChild(row);
+        });
+      }
+
+      // 绑定加班切换
+      setTimeout(() => {
+        const modalToggle = document.getElementById("modalOvertimeToggle");
+        if (modalToggle) {
+          modalToggle.addEventListener("click", () => {
+            workData.overtime = !workData.overtime;
+            saveTodayWork(workData);
+            renderWork();
+            document.getElementById("workGearBtn").click();
+          });
+        }
+      }, 50);
+    },
+    (footer) => {
+      footer.innerHTML = `
+        <button class="btn btn-primary btn-sm" id="workSaveBtn">💾 保存备注</button>
+        <button class="btn btn-outline btn-sm" id="workModalClose">关闭</button>
+      `;
+      footer.querySelector("#workSaveBtn").addEventListener("click", () => {
+        const noteInput = document.getElementById("workNoteInput");
+        workData.note = noteInput ? noteInput.value.trim() : "";
+        saveTodayWork(workData);
+        // 保存到历史
+        const history = LS.get("workHistory", []);
+        const exist = history.findIndex(h => h.date === workData.date);
+        if (exist >= 0) history[exist] = { ...workData };
+        else history.push({ ...workData });
+        LS.set("workHistory", history);
+        renderWork();
+        closeManageModal();
+      });
+      footer.querySelector("#workModalClose").addEventListener("click", closeManageModal);
+    }
+  );
+});
+
+// ==================== 4. 留言板 ====================
+function getMessages() { return LS.get(getUserPrefix() + "messages", []); }
+function setMessages(msgs) { LS.set(getUserPrefix() + "messages", msgs); }
+
+function renderMessages() {
+  const msgs = getMessages();
+  const list = document.getElementById("msgList");
+  if (msgs.length === 0) {
+    list.innerHTML = '<div class="history-empty">💭 暂无留言，说点什么吧～</div>';
+    return;
+  }
+  const sorted = [...msgs].reverse();
+  list.innerHTML = sorted.map(m => {
+    const idx = msgs.indexOf(m);
+    return `
+      <div class="msg-item">
+        <div class="msg-body">
+          <div class="msg-text">💬 ${escHtml(m.text)}</div>
+          <div class="msg-time">🕐 ${fmtTime(m.time)}</div>
+        </div>
+        <span class="msg-del" data-idx="${idx}">🗑️</span>
+      </div>
+    `;
+  }).join("");
+  list.querySelectorAll(".msg-del").forEach(el => {
+    el.addEventListener("click", () => {
+      const ms = getMessages();
+      ms.splice(parseInt(el.dataset.idx), 1);
+      setMessages(ms);
+      renderMessages();
+    });
+  });
+}
+
+function addMessage() {
+  const input = document.getElementById("msgInput");
+  const text = input.value.trim();
+  if (!text) return;
+  const msgs = getMessages();
+  msgs.push({ text, time: new Date().toISOString() });
+  setMessages(msgs);
+  input.value = "";
+  renderMessages();
+}
+
+document.getElementById("msgSendBtn").addEventListener("click", addMessage);
+document.getElementById("msgInput").addEventListener("keydown", e => { if (e.key === "Enter") addMessage(); });
+
+// 留言板管理弹窗
+document.getElementById("msgGearBtn").addEventListener("click", () => {
+  const msgs = getMessages();
+  openManageModal("💬 管理留言板 — " + users[activeUser].name,
+    (body) => {
+      const addDiv = document.createElement("div");
+      addDiv.className = "add-row";
+      addDiv.innerHTML = `
+        <input type="text" id="msgModalInput" placeholder="✍️ 写留言…" maxlength="200" style="flex:2;">
+        <button class="btn btn-primary btn-xs" id="msgModalAdd">📨 发送</button>
+      `;
+      body.appendChild(addDiv);
+
+      if (msgs.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "modal-empty";
+        empty.textContent = "💭 暂无留言";
+        body.appendChild(empty);
+      } else {
+        [...msgs].reverse().forEach(m => {
+          const row = document.createElement("div");
+          row.className = "modal-item-row";
+          const idx = msgs.indexOf(m);
+          row.innerHTML = `
+            <span class="item-text">💬 ${escHtml(m.text)}</span>
+            <span class="item-note">${fmtTime(m.time)}</span>
+            <span class="item-del" data-idx="${idx}">🗑️</span>
+          `;
+          row.querySelector(".item-del").addEventListener("click", () => {
+            const mms = getMessages();
+            mms.splice(parseInt(row.querySelector(".item-del").dataset.idx), 1);
+            setMessages(mms);
+            renderMessages();
+            document.getElementById("msgGearBtn").click();
+          });
+          body.appendChild(row);
+        });
+      }
+
+      setTimeout(() => {
+        const addBtn = document.getElementById("msgModalAdd");
+        const addInput = document.getElementById("msgModalInput");
+        if (addBtn && addInput) {
+          const doAdd = () => {
+            const text = addInput.value.trim();
+            if (!text) return;
+            const mms = getMessages();
+            mms.push({ text, time: new Date().toISOString() });
+            setMessages(mms);
+            renderMessages();
+            document.getElementById("msgGearBtn").click();
+          };
+          addBtn.addEventListener("click", doAdd);
+          addInput.addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
+        }
+      }, 50);
+    },
+    (footer) => {
+      footer.innerHTML = `
+        <button class="btn btn-danger btn-sm" id="msgClearAll">🗑️ 清空全部</button>
+        <button class="btn btn-outline btn-sm" id="msgModalClose">关闭</button>
+      `;
+      footer.querySelector("#msgClearAll").addEventListener("click", () => {
+        if (!confirm("确定要清空 " + users[activeUser].name + " 的所有留言吗？")) return;
+        setMessages([]);
+        renderMessages();
+        closeManageModal();
+      });
+      footer.querySelector("#msgModalClose").addEventListener("click", closeManageModal);
+    }
+  );
+});
+
+// ==================== 5. 奶茶 ====================
+let brands = LS.get("brands", [...defaultBrands]);
+let categories = LS.get("categories", [...defaultCategories]);
+
+function renderPills(containerId, list, lsKey, activeKey) {
+  const container = document.getElementById(containerId);
+  const activeSet = new Set(LS.get(activeKey, [...list]));
+  container.innerHTML = list.map(item => `
+    <span class="pill ${activeSet.has(item) ? "active" : ""}" data-v="${escHtml(item)}">${escHtml(item)}</span>
+  `).join("");
+  container.querySelectorAll(".pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      const v = pill.dataset.v;
+      const cur = LS.get(activeKey, [...list]);
+      const set = new Set(cur);
+      if (set.has(v)) set.delete(v); else set.add(v);
+      LS.set(activeKey, [...set]);
+      renderPills(containerId, list, lsKey, activeKey);
+    });
+  });
+}
+
+function getActivePills(list, activeKey) {
+  const active = LS.get(activeKey, [...list]);
+  return active.length > 0 ? active : [...list];
+}
+
+renderPills("brandPills", brands, "brands", "activeBrands");
+renderPills("categoryPills", categories, "categories", "activeCategories");
+
+document.getElementById("addBrandBtn").addEventListener("click", () => {
+  showTeaAddModal("🏪 添加奶茶品牌", v => {
+    if (!brands.includes(v)) {
+      brands.push(v);
+      LS.set("brands", brands);
+      const active = LS.get("activeBrands", [...brands]);
+      if (!active.includes(v)) { active.push(v); LS.set("activeBrands", active); }
+      renderPills("brandPills", brands, "brands", "activeBrands");
+    }
+  });
+});
+document.getElementById("addCategoryBtn").addEventListener("click", () => {
+  showTeaAddModal("🍵 添加奶茶品类", v => {
+    if (!categories.includes(v)) {
+      categories.push(v);
+      LS.set("categories", categories);
+      const active = LS.get("activeCategories", [...categories]);
+      if (!active.includes(v)) { active.push(v); LS.set("activeCategories", active); }
+      renderPills("categoryPills", categories, "categories", "activeCategories");
+    }
+  });
+});
+
+function showTeaAddModal(title, cb) {
+  openManageModal(title,
+    (body) => {
+      const addDiv = document.createElement("div");
+      addDiv.className = "add-row";
+      addDiv.innerHTML = `
+        <input type="text" id="teaAddInput" placeholder="输入名称…" maxlength="20" style="flex:1;">
+        <button class="btn btn-primary btn-xs" id="teaAddBtn">✅ 添加</button>
+      `;
+      body.appendChild(addDiv);
+      setTimeout(() => {
+        const input = document.getElementById("teaAddInput");
+        const btn = document.getElementById("teaAddBtn");
+        if (input && btn) {
+          const doAdd = () => {
+            const v = input.value.trim();
+            if (v) { cb(v); closeManageModal(); }
+          };
+          btn.addEventListener("click", doAdd);
+          input.addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
+          input.focus();
+        }
+      }, 50);
+    },
+    (footer) => {
+      footer.innerHTML = '<button class="btn btn-outline btn-sm" id="teaAddClose">关闭</button>';
+      footer.querySelector("#teaAddClose").addEventListener("click", closeManageModal);
+    }
+  );
+}
+
+document.getElementById("teaRollBtn").addEventListener("click", () => {
+  const activeBrands = getActivePills(brands, "activeBrands");
+  const activeCats = getActivePills(categories, "activeCategories");
+  const resultEl = document.getElementById("teaResult");
+
+  if (activeBrands.length === 0 || activeCats.length === 0) {
+    resultEl.innerHTML = '<div class="result-placeholder">⚠️ 请至少选择一个品牌和品类哦～</div>';
+    return;
+  }
+  const b = activeBrands[Math.floor(Math.random() * activeBrands.length)];
+  const c = activeCats[Math.floor(Math.random() * activeCats.length)];
+
+  let count = 0;
+  const max = 18;
+  const interval = setInterval(() => {
+    const bb = activeBrands[Math.floor(Math.random() * activeBrands.length)];
+    const cc = activeCats[Math.floor(Math.random() * activeCats.length)];
+    resultEl.innerHTML = '<div class="result-text">' + escHtml(bb) + ' · ' + escHtml(cc) + '</div>';
+    count++;
+    if (count >= max) {
+      clearInterval(interval);
+      resultEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="result-text" id="teaResultText" contenteditable="true"
+            style="cursor:text;outline:none;border-bottom:1px dashed transparent;transition:border-color 0.2s;"
+            onfocus="this.style.borderBottomColor='var(--text3)'"
+            onblur="this.style.borderBottomColor='transparent'"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+            ${escHtml(b)} · ${escHtml(c)}
+          </div>
+          <span style="font-size:0.7rem;color:var(--text3);cursor:default;" title="点击文字可编辑">✎</span>
+        </div>
+      `;
+      const el = resultEl.querySelector("#teaResultText");
+      if (el) { el.style.transform = "scale(1.08)"; setTimeout(() => { el.style.transform = "scale(1)"; }, 180); }
+    }
+  }, 60);
+});
+
+// 奶茶管理弹窗
+document.getElementById("teaGearBtn").addEventListener("click", () => {
+  openManageModal("🧋 管理奶茶选项",
+    (body) => {
+      // 品牌管理
+      const brandTitle = document.createElement("div");
+      brandTitle.className = "modal-section-title";
+      brandTitle.textContent = "🏪 品牌列表（" + brands.length + "）";
+      body.appendChild(brandTitle);
+
+      const brandAdd = document.createElement("div");
+      brandAdd.className = "add-row";
+      brandAdd.innerHTML = `
+        <input type="text" id="brandManageInput" placeholder="🏪 添加品牌…" maxlength="20">
+        <button class="btn btn-primary btn-xs" id="brandManageAdd">➕</button>
+      `;
+      body.appendChild(brandAdd);
+
+      brands.forEach(b => {
+        const row = document.createElement("div");
+        row.className = "modal-item-row";
+        row.innerHTML = `
+          <span class="item-text">${escHtml(b)}</span>
+          <span class="item-del" data-item="${escHtml(b)}">🗑️</span>
+        `;
+        row.querySelector(".item-del").addEventListener("click", () => {
+          const item = row.querySelector(".item-del").dataset.item;
+          brands = brands.filter(x => x !== item);
+          LS.set("brands", brands);
+          const active = LS.get("activeBrands", [...brands]).filter(x => x !== item);
+          LS.set("activeBrands", active);
+          document.getElementById("teaGearBtn").click();
+          renderPills("brandPills", brands, "brands", "activeBrands");
+        });
+        body.appendChild(row);
+      });
+
+      // 品类管理
+      const catTitle = document.createElement("div");
+      catTitle.className = "modal-section-title";
+      catTitle.textContent = "🍵 品类列表（" + categories.length + "）";
+      body.appendChild(catTitle);
+
+      const catAdd = document.createElement("div");
+      catAdd.className = "add-row";
+      catAdd.innerHTML = `
+        <input type="text" id="catManageInput" placeholder="🍵 添加品类…" maxlength="20">
+        <button class="btn btn-primary btn-xs" id="catManageAdd">➕</button>
+      `;
+      body.appendChild(catAdd);
+
+      categories.forEach(c => {
+        const row = document.createElement("div");
+        row.className = "modal-item-row";
+        row.innerHTML = `
+          <span class="item-text">${escHtml(c)}</span>
+          <span class="item-del" data-item="${escHtml(c)}">🗑️</span>
+        `;
+        row.querySelector(".item-del").addEventListener("click", () => {
+          const item = row.querySelector(".item-del").dataset.item;
+          categories = categories.filter(x => x !== item);
+          LS.set("categories", categories);
+          const active = LS.get("activeCategories", [...categories]).filter(x => x !== item);
+          LS.set("activeCategories", active);
+          document.getElementById("teaGearBtn").click();
+          renderPills("categoryPills", categories, "categories", "activeCategories");
+        });
+        body.appendChild(row);
+      });
+
+      // 绑定
+      setTimeout(() => {
+        const bindAdd = (inputId, btnId, list, lsKey, activeKey, containerId) => {
+          const btn = document.getElementById(btnId);
+          const input = document.getElementById(inputId);
+          if (!btn || !input) return;
+          const doAdd = () => {
+            const v = input.value.trim();
+            if (!v || list.includes(v)) return;
+            list.push(v);
+            LS.set(lsKey, list);
+            const act = LS.get(activeKey, [...list]);
+            if (!act.includes(v)) { act.push(v); LS.set(activeKey, act); }
+            renderPills(containerId, list, lsKey, activeKey);
+            document.getElementById("teaGearBtn").click();
+          };
+          btn.addEventListener("click", doAdd);
+          input.addEventListener("keydown", e => { if (e.key === "Enter") doAdd(); });
+        };
+        bindAdd("brandManageInput", "brandManageAdd", brands, "brands", "activeBrands", "brandPills");
+        bindAdd("catManageInput", "catManageAdd", categories, "categories", "activeCategories", "categoryPills");
+      }, 50);
+    },
+    (footer) => {
+      footer.innerHTML = `
+        <button class="btn btn-danger btn-sm" id="teaResetBtn">🔄 恢复默认</button>
+        <button class="btn btn-outline btn-sm" id="teaModalClose">关闭</button>
+      `;
+      footer.querySelector("#teaResetBtn").addEventListener("click", () => {
+        if (!confirm("确定要恢复品牌和品类为默认值吗？自定义的将丢失。")) return;
+        brands = [...defaultBrands];
+        categories = [...defaultCategories];
+        LS.set("brands", brands);
+        LS.set("categories", categories);
+        LS.set("activeBrands", [...brands]);
+        LS.set("activeCategories", [...categories]);
+        renderPills("brandPills", brands, "brands", "activeBrands");
+        renderPills("categoryPills", categories, "categories", "activeCategories");
+        closeManageModal();
+      });
+      footer.querySelector("#teaModalClose").addEventListener("click", closeManageModal);
+    }
+  );
+});
+
+// ==================== 初始化 ====================
+updateCardLabels();
+renderPoop();
+renderWork();
+renderMessages();
+</script>
+</body>
+</html>
